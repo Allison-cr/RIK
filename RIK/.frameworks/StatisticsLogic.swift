@@ -41,7 +41,7 @@ extension StatisticsLogic {
         let realmStatistics = fetchStatisticsFromRealm()
         
         if !realmStatistics.isEmpty {
-            print("Fetched from Realm")
+//            print("Fetched from Realm")
             return Observable.just(realmStatistics)
         } else {
             return fetchData(from: "https://cars.cprogroup.ru/api/episode/statistics/", decodeType: StatisticsResponse.self)
@@ -52,7 +52,7 @@ extension StatisticsLogic {
                 .map { $0.statistics }
                 .catch { error in
                     print("Error fetching statistics: \(error)")
-                    return Observable.just([]) // Вернуть пустой массив в случае ошибки
+                    return Observable.just([]) 
                 }
         }
     }
@@ -62,7 +62,7 @@ extension StatisticsLogic {
         let realmUsers = fetchUsersFromRealm()
         
         if !realmUsers.isEmpty {
-            print("Fetched from Realm")
+//            print("Fetched from Realm")
             return Observable.just(realmUsers)
         } else {
             return fetchData(from: "https://cars.cprogroup.ru/api/episode/users/", decodeType: UsersResponse.self)

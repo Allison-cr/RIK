@@ -88,6 +88,7 @@ final class SignView: UIView {
     }
  
     private func setupUI() {
+        self.translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .white
         layer.cornerRadius = 16
         imageView.pin
@@ -112,7 +113,7 @@ final class SignView: UIView {
             .after(of: imageView).marginLeft(20)
             .right(16)
             .sizeToFit(.width)
-        
+        self.invalidateIntrinsicContentSize()
     }
     
     

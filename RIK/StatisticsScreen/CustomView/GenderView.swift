@@ -52,7 +52,7 @@ final class GenderView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        self.translatesAutoresizingMaskIntoConstraints = false
         genderImage.pin
             .left(16)
             .vCenter()

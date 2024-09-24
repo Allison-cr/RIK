@@ -47,21 +47,41 @@ final class StatisticsView: UIView, ChartViewDelegate {
     private lazy var chartView: LineChartView = setupChartView()
     private var genderMView = GenderView(gender: .man)
     private var genderWView = GenderView(gender: .woman)
-
+        
+    override var intrinsicContentSize: CGSize {
+        let width = UIScreen.main.bounds.width
+        let height = stopFollowersView.frame.maxY + 10
+        return CGSize(width: width, height: height)
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .backgound
+        self.translatesAutoresizingMaskIntoConstraints = false
         setupUI()
+        setupLayout()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
     }
+
     override func layoutSubviews() {
         super.layoutSubviews()
+    
         
+        for subview in subviews {
+            if subview.frame.size.width == 0 {
+                
+                print("subview \(subview)")
+            }
+        }
+        print("StatisticsView layoutSubviews called, current size: \(self.frame.size)")
+    }
+    
+    func setupLayout() {
+        self.layoutIfNeeded()
         headerLabel.pin
             .top(pin.safeArea.top + 20)
             .left(16)
@@ -79,19 +99,17 @@ final class StatisticsView: UIView, ChartViewDelegate {
             .right(16)
             .width(signView.intrinsicContentSize.width)
             .height(signView.intrinsicContentSize.height)
-
         
         viewsHorizontalStackView.pin
             .below(of: signView).marginTop(20)
             .left(16)
-            .sizeToFit(.height)
-        
+            .sizeToFit()
         
         chartView.pin
             .below(of: viewsHorizontalStackView).marginTop(20)
             .left(16)
             .right(16)
-            .height(12%)
+            .height(208)
         
         recentCheckLabel.pin
             .below(of: chartView).marginTop(20)
@@ -127,7 +145,9 @@ final class StatisticsView: UIView, ChartViewDelegate {
         
         genderMView.pin
             .bottomLeft(to: pieChartView.anchor.bottomLeft).marginLeft(16)
-            .width(genderMView.intrinsicContentSize.width)
+            .left(16)
+            .right(16)
+//            .width(genderMView.intrinsicContentSize.width)
             .height(genderMView.intrinsicContentSize.height)
         
         separatorView.pin
@@ -165,9 +185,15 @@ final class StatisticsView: UIView, ChartViewDelegate {
             .left(16)
             .right(16)
             .height(stopFollowersView.intrinsicContentSize.height)
+        
+//        self.frame.size.height = stopFollowersView.frame.maxY
+//        self.frame.size.width = UIScreen.main.bounds.width
+//        self.layoutIfNeeded()
+//        needsLayoutUpdate = true
+        self.layoutIfNeeded()
+        self.invalidateIntrinsicContentSize()
+//          self.setNeedsLayout()
     }
-
-
 }
 
 // MARK: action for chart
@@ -175,15 +201,15 @@ extension StatisticsView {
     // bag layoput memory
     func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
         DispatchQueue.main.async {
-//            self.dataLabel.text = "\(entry.y) посетитель"
-//            self.viewsLabel.text = "\(entry.x) месяц"
-//            self.informationViewVerticalStackView.isHidden = false
-//            
+            self.dataLabel.text = "\(entry.y) посетитель"
+            self.viewsLabel.text = "\(entry.x) месяц"
+            self.informationViewVerticalStackView.isHidden = false
+            
            
-//            self.informationViewVerticalStackView.pin
-//                .top(to: chartView.edge.top).marginTop(8)
-//                .left(highlight.xPx)
-//            self.informationViewVerticalStackView.setNeedsLayout()
+            self.informationViewVerticalStackView.pin
+                .top(to: chartView.edge.top).marginTop(8)
+                .left(highlight.xPx)
+            self.informationViewVerticalStackView.setNeedsLayout()
 
         }
     }
@@ -207,8 +233,7 @@ extension StatisticsView {
         
         let data = PieChartData(dataSet: dataSet)
         pieChartView.data = data
-        
- 
+        layoutIfNeeded()
     }
     
     func updateDataHorizonntalBarStackView(with data: [String: (Int, Int)]) {
@@ -218,9 +243,9 @@ extension StatisticsView {
         
         for (key, values) in sortedData {
             let chartView = CustomHorizontalBarChartView(ageGroup: key, menPercentage: values.0, womenPercentage: values.1)
-            
             horizontalBarStackView.addArrangedSubview(chartView)
         }
+        layoutIfNeeded()
     }
 
     func updateChart(with data: [ChartDataEntry]) {
@@ -272,11 +297,13 @@ extension StatisticsView {
         chartView.notifyDataSetChanged()
         let chartData = LineChartData(dataSet: dataSet)
         chartView.data = chartData
+        layoutIfNeeded()
     }
    
     func updateDataTable(with users: [Users]) {
         self.users = users
         usersTableView.reloadData()
+        layoutIfNeeded()
     }
 }
 
@@ -305,6 +332,7 @@ private extension StatisticsView {
 // MARK: Setup View Hierarchy and Layout
 private extension StatisticsView {
     func setupViewHierarchy() {
+        print("init")
         addSubview(headerLabel)
         addSubview(clientsLabel)
         addSubview(signView)
@@ -400,11 +428,11 @@ private extension StatisticsView {
         chartView.backgroundColor = .white
         chartView.layer.cornerRadius = 16
         chartView.layer.masksToBounds = true
-        chartView.translatesAutoresizingMaskIntoConstraints = false
         chartView.extraLeftOffset = 20
         chartView.extraRightOffset = 20
         chartView.extraTopOffset = 20
         chartView.extraBottomOffset = 20
+        chartView.translatesAutoresizingMaskIntoConstraints = false
         return chartView
     }
     
@@ -453,10 +481,11 @@ private extension StatisticsView {
         stackView.axis = .horizontal
         stackView.spacing = 20
         stackView.alignment = .fill
-        stackView.distribution = .fill
+        stackView.distribution = .fillEqually
         stackView.addArrangedSubview(perDayButton)
         stackView.addArrangedSubview(perWeekButton)
         stackView.addArrangedSubview(perMonthButton)
+        stackView.sizeToFit()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }
@@ -483,6 +512,7 @@ private extension StatisticsView {
         button.layer.borderColor = UIColor(resource: .border).cgColor
         button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.sizeToFit()
         return button
     }
     
@@ -491,6 +521,7 @@ private extension StatisticsView {
         label.text = "Статистика"
         label.font = .boldSystemFont(ofSize: 18)
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.sizeToFit()
         return label
     }
     
@@ -499,6 +530,7 @@ private extension StatisticsView {
         label.text = "Посетители"
         label.font = .boldSystemFont(ofSize: 12)
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.sizeToFit()
         return label
     }
     
@@ -508,6 +540,7 @@ private extension StatisticsView {
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .boldSystemFont(ofSize: 12)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.sizeToFit()
         return button
     }
     
@@ -517,6 +550,7 @@ private extension StatisticsView {
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .boldSystemFont(ofSize: 12)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.sizeToFit()
 
         return button
     }
@@ -527,6 +561,7 @@ private extension StatisticsView {
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .boldSystemFont(ofSize: 12)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.sizeToFit()
 
         return button
     }
@@ -537,6 +572,7 @@ private extension StatisticsView {
         label.textColor = .black
         label.font = .boldSystemFont(ofSize: 20)
         label.translatesAutoresizingMaskIntoConstraints = false
+        
         return label
     }
     
@@ -622,9 +658,6 @@ private extension StatisticsView {
    }
 }
 
-extension StatisticsView {
-
-}
 
 extension StatisticsView: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
